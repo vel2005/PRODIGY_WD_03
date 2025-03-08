@@ -1,69 +1,80 @@
-// script.js
+let boxes = document.querySelectorAll(".box");
 
-// Initial variables
-let board = ['', '', '', '', '', '', '', '', ''];
-let currentPlayer = 'X';
-let gameActive = true;
+let turn = "X";
+let isGameOver = false;
 
-// Winning combinations
-const winningCombinations = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-];
+boxes.forEach(e =>{
+    e.innerHTML = ""
+    e.addEventListener("click", ()=>{
+        if(!isGameOver && e.innerHTML === ""){
+            e.innerHTML = turn;
+            cheakWin();
+            cheakDraw();
+            changeTurn();
+        }
+    })
+})
 
-// DOM elements
-const cells = document.querySelectorAll('.cell');
-const restartButton = document.getElementById('restart');
-
-// Functions to handle game logic
-function handleCellClick(event) {
-    const cellIndex = event.target.getAttribute('data-index');
-    
-    if (board[cellIndex] !== '' || !gameActive) return;
-
-    updateCell(cellIndex);
-    checkWinner();
+function changeTurn(){
+    if(turn === "X"){
+        turn = "O";
+        document.querySelector(".bg").style.left = "85px";
+    }
+    else{
+        turn = "X";
+        document.querySelector(".bg").style.left = "0";
+    }
 }
 
-function updateCell(index) {
-    board[index] = currentPlayer;
-    cells[index].textContent = currentPlayer;
-    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-}
+function cheakWin(){
+    let winConditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ]
+    for(let i = 0; i<winConditions.length; i++){
+        let v0 = boxes[winConditions[i][0]].innerHTML;
+        let v1 = boxes[winConditions[i][1]].innerHTML;
+        let v2 = boxes[winConditions[i][2]].innerHTML;
 
-function checkWinner() {
-    let roundWon = false;
-    
-    for (let i = 0; i < winningCombinations.length; i++) {
-        const [a, b, c] = winningCombinations[i];
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            roundWon = true;
-            break;
+        if(v0 != "" && v0 === v1 && v0 === v2){
+            isGameOver = true;
+            document.querySelector("#results").innerHTML = turn + " win";
+            document.querySelector("#play-again").style.display = "inline"
+
+            for(j = 0; j<3; j++){
+                boxes[winConditions[i][j]].style.backgroundColor = "#08D9D6"
+                boxes[winConditions[i][j]].style.color = "#000"
+            }
         }
     }
+}
 
-    if (roundWon) {
-        alert(`Player ${currentPlayer === 'X' ? 'O' : 'X'} wins!`);
-        gameActive = false;
-    } else if (!board.includes('')) {
-        alert('It\'s a draw!');
-        gameActive = false;
+function cheakDraw(){
+    if(!isGameOver){
+        let isDraw = true;
+        boxes.forEach(e =>{
+            if(e.innerHTML === "") isDraw = false;
+        })
+
+        if(isDraw){
+            isGameOver = true;
+            document.querySelector("#results").innerHTML = "Draw";
+            document.querySelector("#play-again").style.display = "inline"
+        }
     }
 }
 
-function restartGame() {
-    board = ['', '', '', '', '', '', '', '', ''];
-    gameActive = true;
-    currentPlayer = 'X';
-    cells.forEach(cell => cell.textContent = '');
-}
+document.querySelector("#play-again").addEventListener("click", ()=>{
+    isGameOver = false;
+    turn = "X";
+    document.querySelector(".bg").style.left = "0";
+    document.querySelector("#results").innerHTML = "";
+    document.querySelector("#play-again").style.display = "none";
 
-// Event Listeners
-cells.forEach(cell => cell.addEventListener('click', handleCellClick));
-restartButton.addEventListener('click', restartGame);
+    boxes.forEach(e =>{
+        e.innerHTML = "";
+        e.style.removeProperty("background-color");
+        e.style.color = "#fff"
+    })
+})
